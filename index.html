@@ -69,6 +69,26 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
 .empty{color:var(--muted);text-align:center;padding:22px 0;font-size:14px}
 .footer-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px}
 .footer-actions button{font-size:13px;padding:11px 6px}
+.view-tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab{flex:1;background:#eef2ff;color:var(--primary);min-height:42px;padding:10px 8px}
+.tab.active{background:var(--primary);color:#fff}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px}
+.cal-title{font-weight:700;font-size:16px}
+.cal-nav{background:#f3f4f6;color:var(--text);min-height:36px;padding:6px 14px;font-size:18px;line-height:1}
+.cal-week,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-week span{text-align:center;color:var(--muted);font-size:12px;padding:2px 0}
+.cal-cell{position:relative;min-height:0;padding:8px 2px 6px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);font-size:14px;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}
+.cal-cell.empty{border:0;background:transparent;box-shadow:none}
+.cal-cell span{font-size:10px;color:var(--muted)}
+.cal-normal{background:#e7f6ef;border-color:#b7e2cd}
+.cal-normal span{color:var(--green);font-weight:700}
+.cal-off{background:#fdf3e2;border-color:#f0d9b4}
+.cal-off span{color:var(--amber);font-weight:700}
+.cal-overtime{background:#fdeaea;border-color:#f3c1c1}
+.cal-overtime span{color:var(--red);font-weight:700}
+.cal-today{outline:2px solid var(--primary);outline-offset:1px}
+.cal-legend{display:flex;gap:14px;margin-top:10px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.cal-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
 .modal-backdrop{position:fixed;inset:0;background:rgba(17,24,39,.45);display:flex;align-items:center;justify-content:center;z-index:40;padding:16px}
 .modal-backdrop .dialog-body{background:#fff;border-radius:18px;width:min(92vw,440px);box-shadow:0 18px 50px rgba(17,24,39,.25)}
 .dialog-body{padding:18px}
@@ -127,8 +147,23 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
   </details>
 
   <div class="card">
-    <h2>打卡记录</h2>
-    <div class="records"><ul id="recordList"></ul></div>
+    <div class="view-tabs">
+      <button id="tabList" class="tab active" onclick="setView('list')">列表</button>
+      <button id="tabCalendar" class="tab" onclick="setView('calendar')">日历</button>
+    </div>
+    <div id="viewList">
+      <div class="records"><ul id="recordList"></ul></div>
+    </div>
+    <div id="viewCalendar" class="hidden">
+      <div class="cal-head">
+        <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+        <div class="cal-title" id="calTitle"></div>
+        <button class="cal-nav" onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="cal-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-legend"><span><i style="background:#059669"></i>正常</span><span><i style="background:#d97706"></i>调休</span><span><i style="background:#dc2626"></i>加班</span></div>
+    </div>
   </div>
 
   <div class="footer-actions">
@@ -180,6 +215,9 @@ const STORE_KEY = 'workhour.v1';
 const DEFAULT_SETTINGS = { normalHours: 8, lunchMinutes: 30 };
 
 let state = loadState();
+let currentView = 'list';
+const initNow = new Date();
+let calendarCursor = { year: initNow.getFullYear(), month: initNow.getMonth() + 1 };
 
 /* ---------- storage ---------- */
 function loadState(){
@@ -317,11 +355,11 @@ function recordOff(){
 }
 
 /* ---------- record form ---------- */
-function openRecordForm(id){
+function openRecordForm(id, date){
   $('dialogTitle').textContent = id ? '编辑记录' : '补录记录';
   $('fId').value = id || '';
   const rec = id ? state.records.find(r => r.id === id) : null;
-  $('fDate').value = rec ? rec.date : todayStr();
+  $('fDate').value = rec ? rec.date : (date || todayStr());
   $('fType').value = rec ? rec.type : 'work';
   $('fIn').value = (rec && rec.in) ? rec.in : '07:00';
   $('fOut').value = (rec && rec.out) ? rec.out : '17:00';
@@ -471,6 +509,7 @@ function render(){
 
   renderSettings();
   renderRecords();
+  renderCalendar();
 }
 function renderRecords(){
   const list = $('recordList');
@@ -501,6 +540,53 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+/* ---------- calendar ---------- */
+function setView(v){
+  currentView = v;
+  $('tabList').classList.toggle('active', v === 'list');
+  $('tabCalendar').classList.toggle('active', v === 'calendar');
+  $('viewList').classList.toggle('hidden', v !== 'list');
+  $('viewCalendar').classList.toggle('hidden', v !== 'calendar');
+}
+function changeMonth(delta){
+  calendarCursor.month += delta;
+  if(calendarCursor.month > 12){ calendarCursor.month = 1; calendarCursor.year += 1; }
+  else if(calendarCursor.month < 1){ calendarCursor.month = 12; calendarCursor.year -= 1; }
+  renderCalendar();
+}
+function dayStatus(rec){
+  if(!rec) return null;
+  if(rec.type === 'off') return 'off';
+  return overtimeDelta(rec) > 0 ? 'overtime' : 'normal';
+}
+function renderCalendar(){
+  const y = calendarCursor.year;
+  const m = calendarCursor.month;
+  $('calTitle').textContent = y + '年' + m + '月';
+  const firstDow = (new Date(y, m - 1, 1).getDay() + 6) % 7;
+  const days = new Date(y, m, 0).getDate();
+  let html = '';
+  for(let i = 0; i < firstDow; i++){ html += '<div class="cal-cell empty"></div>'; }
+  for(let d = 1; d <= days; d++){
+    const ds = y + '-' + pad(m) + '-' + pad(d);
+    const rec = recordForDate(ds);
+    const st = dayStatus(rec);
+    let cls = 'cal-cell';
+    let label = '';
+    if(st === 'off'){ cls += ' cal-off'; label = '休'; }
+    else if(st === 'overtime'){ cls += ' cal-overtime'; label = '加'; }
+    else if(st === 'normal'){ cls += ' cal-normal'; label = '班'; }
+    if(ds === todayStr()){ cls += ' cal-today'; }
+    html += '<button class="' + cls + '" onclick="openDay(\'' + ds + '\')">' + d + '<span>' + label + '</span></button>';
+  }
+  $('calGrid').innerHTML = html;
+}
+function openDay(dateStr){
+  const rec = recordForDate(dateStr);
+  if(rec){ openRecordForm(rec.id); }
+  else { openRecordForm(null, dateStr); }
+}
+
 /* ---------- clock & toast ---------- */
 function tick(){
   const d = new Date();
@@ -518,6 +604,7 @@ function toast(msg){
 /* ---------- init ---------- */
 $('setNormal').addEventListener('change', settingsChanged);
 $('setLunch').addEventListener('change', settingsChanged);
+setView('list');
 tick();
 setInterval(tick, 1000);
 render();
