@@ -1,0 +1,532 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#2563eb" />
+<title>工时打卡</title>
+<link rel="manifest" href="./manifest.json" />
+<link rel="apple-touch-icon" href="./icon-192.png" />
+<style>
+:root{
+  --bg:#f2f4f8; --card:#ffffff; --text:#111827; --muted:#6b7280;
+  --primary:#2563eb; --primary-dark:#1d4ed8; --green:#059669; --amber:#d97706; --red:#dc2626;
+  --border:#e5e7eb; --radius:16px; --shadow:0 6px 18px rgba(17,24,39,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text); min-height:100vh; line-height:1.5;
+  -webkit-tap-highlight-color:transparent;
+}
+.wrap{max-width:520px;margin:0 auto;padding:16px 16px calc(28px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 14px}
+h1{font-size:20px;margin:0;font-weight:700}
+#clock{font-variant-numeric:tabular-nums;font-weight:700;font-size:18px;color:var(--primary)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 12px;text-align:center}
+.stat .value{display:block;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.stat .value.hot{color:var(--primary)}
+.stat .value.green{color:var(--green)}
+.stat .value.amber{color:var(--amber)}
+.stat .label{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.stat small{font-weight:400;color:var(--muted);font-size:13px}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+button{
+  border:0;border-radius:14px;font-size:15px;font-weight:600;padding:14px 10px;cursor:pointer;
+  background:var(--primary);color:#fff;min-height:48px;transition:filter .15s, transform .05s;
+}
+button:active{transform:scale(.97)}
+button:disabled{background:#cbd5e1;color:#64748b;cursor:not-allowed}
+button.ghost{background:#eef2ff;color:var(--primary)}
+button.green{background:var(--green)}
+button.amber{background:var(--amber)}
+button.red{background:var(--red)}
+.today-status{font-size:15px;color:var(--muted);margin-bottom:12px}
+.today-status b{color:var(--text)}
+h2{font-size:15px;margin:0 0 10px;color:var(--text)}
+.settings label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
+.settings .row{display:flex;gap:10px}
+.settings .field{flex:1}
+.settings input{
+  width:100%;border:1px solid var(--border);border-radius:12px;padding:11px 12px;font-size:16px;background:#fff;color:var(--text);
+}
+.settings input:focus{outline:2px solid var(--primary);outline-offset:1px}
+.records ul{list-style:none;margin:0;padding:0}
+.record{display:flex;flex-direction:column;gap:6px;padding:13px 14px;border:1px solid var(--border);border-radius:14px;margin-bottom:10px;background:#fff}
+.record .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.badge{font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;color:#fff}
+.badge.work{background:var(--primary)}
+.badge.off{background:var(--amber)}
+.record .date{color:var(--muted);font-size:13px;flex:1}
+.icon-btn{background:#f3f4f6;color:var(--muted);border-radius:10px;min-height:32px;padding:4px 10px;font-size:13px}
+.record .meta{font-size:13px;color:var(--muted)}
+.record .nums{font-size:15px;font-weight:600}
+.record .nums .overtime-pos{color:var(--red)}
+.record .nums .overtime-neg{color:var(--green)}
+.empty{color:var(--muted);text-align:center;padding:22px 0;font-size:14px}
+.footer-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px}
+.footer-actions button{font-size:13px;padding:11px 6px}
+.modal-backdrop{position:fixed;inset:0;background:rgba(17,24,39,.45);display:flex;align-items:center;justify-content:center;z-index:40;padding:16px}
+.modal-backdrop .dialog-body{background:#fff;border-radius:18px;width:min(92vw,440px);box-shadow:0 18px 50px rgba(17,24,39,.25)}
+.dialog-body{padding:18px}
+.dialog-body h3{margin:0 0 14px;font-size:17px}
+.dialog-body label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px}
+.dialog-body input,.dialog-body select{width:100%;border:1px solid var(--border);border-radius:12px;padding:11px 12px;font-size:16px;background:#fff;color:var(--text)}
+.dialog-body .two{display:flex;gap:10px}
+.dialog-body .two>div{flex:1}
+.dialog-actions{display:flex;gap:10px;margin-top:18px}
+.dialog-actions button{flex:1}
+.toast{
+  position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);
+  background:#111827;color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;
+  transition:opacity .2s, transform .2s;z-index:50;max-width:90vw;
+}
+.toast.show{opacity:.95;transform:translateX(-50%) translateY(0)}
+.hidden{display:none !important}
+@media (max-width:360px){.stat .value{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>工时打卡</h1>
+    <div id="clock">--:--</div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><span class="value hot" id="statWorkDays">0</span><span class="label">上班天数</span></div>
+    <div class="stat"><span class="value amber" id="statOffDays">0</span><span class="label">调休天数</span></div>
+    <div class="stat"><span class="value" id="statTotalHours">0</span><span class="label">综合上班工时(小时)</span></div>
+    <div class="stat"><span class="value green" id="statOvertime">0</span><span class="label">累计加班工时(小时)</span></div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="today-status" id="todayStatus">今天还没有打卡。</div>
+    <div class="actions">
+      <button id="btnIn" onclick="clockIn()">上班打卡</button>
+      <button id="btnOut" class="green" onclick="clockOut()">下班打卡</button>
+      <button id="btnOff" class="amber" onclick="recordOff()">调休</button>
+    </div>
+  </div>
+
+  <details class="card settings">
+    <summary style="cursor:pointer;font-weight:600;font-size:15px">设置</summary>
+    <div class="row" style="margin-top:14px">
+      <div class="field">
+        <label for="setNormal">每天正常工时(小时)</label>
+        <input id="setNormal" type="number" min="0.5" step="0.5" inputmode="decimal" />
+      </div>
+      <div class="field">
+        <label for="setLunch">午休时长(分钟)</label>
+        <input id="setLunch" type="number" min="0" step="5" inputmode="numeric" />
+      </div>
+    </div>
+  </details>
+
+  <div class="card">
+    <h2>打卡记录</h2>
+    <div class="records"><ul id="recordList"></ul></div>
+  </div>
+
+  <div class="footer-actions">
+    <button class="ghost" onclick="openRecordForm()">补录</button>
+    <button class="ghost" onclick="exportData()">导出</button>
+    <button class="ghost" onclick="document.getElementById('importFile').click()">导入</button>
+    <button class="ghost" onclick="clearData()">清空</button>
+  </div>
+  <input type="file" id="importFile" accept="application/json" class="hidden" onchange="importData(event)" />
+</div>
+
+<div class="modal-backdrop hidden" id="recordDialog">
+  <div class="dialog-body">
+    <h3 id="dialogTitle">补录记录</h3>
+    <form id="recordForm" onsubmit="saveRecord(event)">
+      <input type="hidden" id="fId" />
+      <label for="fDate">日期</label>
+      <input id="fDate" type="date" required />
+      <label for="fType">类型</label>
+      <select id="fType" onchange="toggleTypeFields()">
+        <option value="work">上班</option>
+        <option value="off">调休</option>
+      </select>
+      <div id="workFields">
+        <div class="two">
+          <div><label for="fIn">上班时间</label><input id="fIn" type="time" /></div>
+          <div><label for="fOut">下班时间</label><input id="fOut" type="time" /></div>
+        </div>
+        <label for="fLunch">午休时长(分钟)</label>
+        <input id="fLunch" type="number" min="0" step="5" inputmode="numeric" />
+      </div>
+      <label for="fNormal">正常工时(小时)</label>
+      <input id="fNormal" type="number" min="0.5" step="0.5" inputmode="decimal" />
+      <label for="fNote">备注(可选)</label>
+      <input id="fNote" type="text" maxlength="60" placeholder="例如：加班、调休等" />
+      <div class="dialog-actions">
+        <button type="button" class="ghost" onclick="closeDialog()">取消</button>
+        <button type="submit">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const STORE_KEY = 'workhour.v1';
+const DEFAULT_SETTINGS = { normalHours: 8, lunchMinutes: 30 };
+
+let state = loadState();
+
+/* ---------- storage ---------- */
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){
+      const s = JSON.parse(raw);
+      if(s && typeof s === 'object'){
+        s.settings = Object.assign({}, DEFAULT_SETTINGS, s.settings || {});
+        s.records = Array.isArray(s.records) ? s.records : [];
+        s.active = s.active || null;
+        return s;
+      }
+    }
+  }catch(e){}
+  return { settings: Object.assign({}, DEFAULT_SETTINGS), records: [], active: null };
+}
+function save(){
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  render();
+}
+
+/* ---------- helpers ---------- */
+function $(id){ return document.getElementById(id); }
+function pad(n){ return String(n).padStart(2,'0'); }
+function todayStr(d){
+  d = d || new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+}
+function nowHM(){
+  const d = new Date();
+  return pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function hmToMin(hm){
+  const parts = String(hm || '').split(':').map(Number);
+  if(parts.length !== 2 || parts.some(isNaN)) return NaN;
+  return parts[0]*60 + parts[1];
+}
+function round2(n){ return Math.round(n*100)/100; }
+function fmtHours(h){
+  const r = round2(h);
+  return String(r);
+}
+function uid(){
+  return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + '-' + Math.random().toString(16).slice(2));
+}
+function recordForDate(date){
+  return state.records.find(r => r.date === date) || null;
+}
+function computeDuration(r){
+  if(r.type === 'off') return round2(-Number(r.normalHours));
+  const diff = hmToMin(r.out) - hmToMin(r.in) - Number(r.lunchMinutes || 0);
+  return round2(diff / 60);
+}
+function overtimeDelta(r){
+  if(r.type === 'off') return round2(-Number(r.normalHours));
+  return round2(computeDuration(r) - Number(r.normalHours));
+}
+function computeStats(){
+  let workDays=0, offDays=0, totalHours=0, normalWorkHours=0, overtime=0;
+  for(const r of state.records){
+    const d = computeDuration(r);
+    totalHours += d;
+    overtime += overtimeDelta(r);
+    if(r.type === 'work'){ workDays++; normalWorkHours += Number(r.normalHours); }
+    else offDays++;
+  }
+  return { workDays, offDays, totalHours: round2(totalHours), normalWorkHours: round2(normalWorkHours), overtime: round2(overtime) };
+}
+
+/* ---------- actions ---------- */
+function clockIn(){
+  const today = todayStr();
+  if(state.active){
+    toast(state.active.date === today ? '今天已经打过上班卡了' : '请先处理 ' + state.active.date + ' 的未下班记录');
+    return;
+  }
+  if(recordForDate(today)){
+    toast('今天已有记录，请编辑或删除后重试');
+    return;
+  }
+  state.active = {
+    date: today,
+    clockIn: nowHM(),
+    normalHours: Number(state.settings.normalHours),
+    lunchMinutes: Number(state.settings.lunchMinutes)
+  };
+  save();
+  toast('上班打卡成功 ' + state.active.clockIn);
+}
+function clockOut(){
+  if(!state.active){
+    toast('请先打上班卡');
+    return;
+  }
+  if(state.active.date !== todayStr()){
+    toast('上次上班打卡是 ' + state.active.date + '，请先编辑或删除该记录再重新打卡');
+    return;
+  }
+  const out = nowHM();
+  if(hmToMin(out) <= hmToMin(state.active.clockIn)){
+    toast('下班时间需晚于上班时间，请检查时间');
+    return;
+  }
+  const rec = {
+    id: uid(),
+    date: state.active.date,
+    type: 'work',
+    in: state.active.clockIn,
+    out: out,
+    lunchMinutes: state.active.lunchMinutes,
+    normalHours: state.active.normalHours,
+    note: ''
+  };
+  state.records.unshift(rec);
+  state.active = null;
+  save();
+  toast('下班打卡成功 ' + out);
+}
+function recordOff(){
+  const today = todayStr();
+  if(state.active){ toast('请先完成下班打卡'); return; }
+  if(recordForDate(today)){ toast('今天已有记录，请编辑或删除后重试'); return; }
+  const normalHours = Number(state.settings.normalHours);
+  if(!confirm('把今天记为调休？将记录 ' + fmtHours(-normalHours) + ' 小时。')) return;
+  state.records.unshift({
+    id: uid(),
+    date: today,
+    type: 'off',
+    normalHours: normalHours,
+    note: '调休'
+  });
+  save();
+  toast('已记录调休 ' + fmtHours(-normalHours) + ' 小时');
+}
+
+/* ---------- record form ---------- */
+function openRecordForm(id){
+  $('dialogTitle').textContent = id ? '编辑记录' : '补录记录';
+  $('fId').value = id || '';
+  const rec = id ? state.records.find(r => r.id === id) : null;
+  $('fDate').value = rec ? rec.date : todayStr();
+  $('fType').value = rec ? rec.type : 'work';
+  $('fIn').value = (rec && rec.in) ? rec.in : '07:00';
+  $('fOut').value = (rec && rec.out) ? rec.out : '17:00';
+  $('fLunch').value = rec ? (rec.lunchMinutes != null ? rec.lunchMinutes : state.settings.lunchMinutes) : state.settings.lunchMinutes;
+  $('fNormal').value = rec ? rec.normalHours : state.settings.normalHours;
+  $('fNote').value = rec ? (rec.note || '') : '';
+  toggleTypeFields();
+  $('recordDialog').classList.remove('hidden');
+}
+function closeDialog(){ $('recordDialog').classList.add('hidden'); }
+function toggleTypeFields(){
+  const isWork = $('fType').value === 'work';
+  $('workFields').classList.toggle('hidden', !isWork);
+  $('fIn').required = isWork;
+  $('fOut').required = isWork;
+}
+function saveRecord(e){
+  e.preventDefault();
+  const id = $('fId').value;
+  const date = $('fDate').value;
+  const type = $('fType').value;
+  const normalHours = Number($('fNormal').value);
+  if(!date){ toast('请选择日期'); return; }
+  if(!(normalHours > 0)){ toast('正常工时需大于 0'); return; }
+  const dup = state.records.find(r => r.date === date && r.id !== id);
+  if(dup){ toast('该日期已有记录，请先编辑或删除'); return; }
+
+  let rec;
+  if(type === 'work'){
+    const tin = $('fIn').value, tout = $('fOut').value;
+    if(!tin || !tout){ toast('请填写上下班时间'); return; }
+    if(hmToMin(tout) <= hmToMin(tin)){ toast('下班时间需晚于上班时间'); return; }
+    const lunch = Math.max(0, Number($('fLunch').value) || 0);
+    rec = { id: id || uid(), date, type, in: tin, out: tout, lunchMinutes: lunch, normalHours, note: $('fNote').value.trim() };
+  }else{
+    rec = { id: id || uid(), date, type, normalHours, note: $('fNote').value.trim() };
+  }
+
+  if(id){
+    const idx = state.records.findIndex(r => r.id === id);
+    if(idx >= 0) state.records[idx] = rec;
+  }else{
+    state.records.unshift(rec);
+  }
+  if(state.active && state.active.date === date) state.active = null;
+  closeDialog();
+  save();
+  toast('已保存');
+}
+function editRecord(id){
+  if(!confirm('编辑这条记录？')) return;
+  openRecordForm(id);
+}
+function deleteRecord(id){
+  const rec = state.records.find(r => r.id === id);
+  if(!rec) return;
+  if(!confirm('删除 ' + rec.date + ' 的记录？')) return;
+  state.records = state.records.filter(r => r.id !== id);
+  if(state.active && state.active.date === rec.date) state.active = null;
+  save();
+  toast('已删除');
+}
+
+/* ---------- settings ---------- */
+function settingsChanged(){
+  const n = Number($('setNormal').value);
+  const l = Number($('setLunch').value);
+  if(!(n > 0)){ toast('正常工时需大于 0'); renderSettings(); return; }
+  if(isNaN(l) || l < 0){ toast('午休时长不能为负'); renderSettings(); return; }
+  state.settings.normalHours = n;
+  state.settings.lunchMinutes = l;
+  save();
+}
+function renderSettings(){
+  $('setNormal').value = state.settings.normalHours;
+  $('setLunch').value = state.settings.lunchMinutes;
+}
+
+/* ---------- import/export/clear ---------- */
+function exportData(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '工时打卡备份-' + todayStr() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  toast('已导出备份');
+}
+function importData(event){
+  const file = event.target.files && event.target.files[0];
+  event.target.value = '';
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(){
+    try{
+      const data = JSON.parse(reader.result);
+      if(!data || !Array.isArray(data.records)){
+        toast('文件格式不正确');
+        return;
+      }
+      if(!confirm('导入将覆盖当前数据，确定继续？')) return;
+      data.settings = Object.assign({}, DEFAULT_SETTINGS, data.settings || {});
+      data.active = data.active || null;
+      state = data;
+      save();
+      toast('导入成功');
+    }catch(err){
+      toast('文件读取失败');
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+}
+function clearData(){
+  if(!confirm('清空所有打卡记录和设置？此操作不可恢复。')) return;
+  state = { settings: Object.assign({}, DEFAULT_SETTINGS), records: [], active: null };
+  save();
+  toast('已清空');
+}
+
+/* ---------- render ---------- */
+function render(){
+  const today = todayStr();
+  const stats = computeStats();
+  $('statWorkDays').textContent = stats.workDays;
+  $('statOffDays').textContent = stats.offDays;
+  $('statTotalHours').textContent = fmtHours(stats.totalHours);
+  $('statOvertime').textContent = (stats.overtime > 0 ? '+' : '') + fmtHours(stats.overtime);
+
+  const active = state.active;
+  const todayRec = recordForDate(today);
+  const status = $('todayStatus');
+  if(active){
+    const activeLabel = active.date === today ? '已上班打卡' : '上次上班打卡(' + active.date + ')';
+    status.innerHTML = activeLabel + ' <b>' + active.clockIn + '</b>，下班请点绿色按钮。';
+  }else if(todayRec){
+    const d = computeDuration(todayRec);
+    status.innerHTML = '今日已记录：<b>' + (todayRec.type === 'work' ? '上班' : '调休') + '</b>，时长 <b>' + fmtHours(d) + '</b> 小时。';
+  }else{
+    status.textContent = '今天还没有打卡。';
+  }
+  $('btnIn').disabled = !!(active || todayRec);
+  $('btnOut').disabled = !active;
+  $('btnOff').disabled = !!(active || todayRec);
+
+  renderSettings();
+  renderRecords();
+}
+function renderRecords(){
+  const list = $('recordList');
+  if(!state.records.length){
+    list.innerHTML = '<li class="empty">暂无记录，点击上方按钮开始打卡</li>';
+    return;
+  }
+  const sorted = state.records.slice().sort((a,b) => b.date.localeCompare(a.date));
+  list.innerHTML = sorted.map(r => {
+    const d = computeDuration(r);
+    const o = overtimeDelta(r);
+    const isWork = r.type === 'work';
+    const badge = isWork ? '<span class="badge work">上班</span>' : '<span class="badge off">调休</span>';
+    const meta = isWork
+      ? r.in + ' - ' + r.out + ' · 午休 ' + r.lunchMinutes + ' 分' + (r.note ? ' · ' + escapeHtml(r.note) : '')
+      : '正常工时 ' + fmtHours(r.normalHours) + ' 小时' + (r.note ? ' · ' + escapeHtml(r.note) : '');
+    const oCls = o > 0 ? 'overtime-pos' : 'overtime-neg';
+    return '<li class="record">'
+      + '<div class="top">' + badge + '<span class="date">' + r.date + '</span>'
+      + '<button class="icon-btn" onclick="editRecord(\'' + r.id + '\')">编辑</button>'
+      + '<button class="icon-btn" onclick="deleteRecord(\'' + r.id + '\')">删除</button></div>'
+      + '<div class="meta">' + meta + '</div>'
+      + '<div class="nums">时长 ' + fmtHours(d) + ' 小时 · 加班 <span class="' + oCls + '">' + (o > 0 ? '+' : '') + fmtHours(o) + '</span> 小时</div>'
+      + '</li>';
+  }).join('');
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- clock & toast ---------- */
+function tick(){
+  const d = new Date();
+  $('clock').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+let toastTimer = null;
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+/* ---------- init ---------- */
+$('setNormal').addEventListener('change', settingsChanged);
+$('setLunch').addEventListener('change', settingsChanged);
+tick();
+setInterval(tick, 1000);
+render();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
