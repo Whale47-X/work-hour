@@ -20,28 +20,38 @@ body{
   background:var(--bg); color:var(--text); min-height:100vh; line-height:1.5;
   -webkit-tap-highlight-color:transparent;
 }
-.wrap{max-width:520px;margin:0 auto;padding:20px 18px calc(32px + env(safe-area-inset-bottom))}
-header{display:flex;align-items:center;justify-content:space-between;padding:0 0 22px}
-h1{font-size:20px;margin:0;font-weight:700}
-#clock{font-variant-numeric:tabular-nums;font-weight:600;font-size:16px;color:var(--muted)}
-.overview{padding:0 2px 22px;border-bottom:1px solid var(--border);margin-bottom:18px}
-.stats-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.wrap{max-width:520px;height:100dvh;min-height:520px;margin:0 auto;padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;padding:0 0 8px;flex:none}
+h1{font-size:18px;margin:0;font-weight:700}
+.header-tools{display:flex;align-items:center;gap:8px}
+#clock{font-variant-numeric:tabular-nums;font-weight:600;font-size:14px;color:var(--muted)}
+.tools-menu{position:relative;z-index:20}
+.tools-menu summary{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-size:21px;line-height:1;cursor:pointer;list-style:none}
+.tools-menu summary::-webkit-details-marker{display:none}
+.tools-popover{position:absolute;right:0;top:40px;width:min(335px,calc(100vw - 28px));max-height:calc(100dvh - 58px);overflow:auto;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 12px 30px rgba(20,35,30,.15);padding:16px}
+.tools-popover h2{margin:0 0 10px}
+.overview{padding:0 2px 10px;border-bottom:1px solid var(--border);margin-bottom:8px;flex:none}
+.stats-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
 .stats-head h2{margin:0}
-.range-select{max-width:150px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-size:14px;padding:8px 9px}
-.overview-hours{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:end}
-.overview-hours>div+div{border-left:1px solid var(--border);padding-left:18px}
-.overview-value{display:block;font-size:34px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.overview-value small{font-size:13px;font-weight:500;color:var(--muted);margin-left:4px}
+.month-control{display:flex;align-items:center;gap:2px}
+.month-nav{width:28px;height:28px;min-height:28px;padding:0;background:transparent;color:var(--muted);font-size:20px;line-height:1}
+.range-select{width:106px;border:0;background:transparent;color:var(--text);font-size:13px;font-weight:600;padding:3px 0}
+.overview-hours{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:12px;align-items:end}
+.overview-hours>div+div{border-left:1px solid var(--border);padding-left:12px}
+.overview-value{display:block;font-size:27px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.overview-value small{font-size:11px;font-weight:500;color:var(--muted);margin-left:3px}
 .overview-value.overtime{color:var(--primary)}
-.overview-label,.count-label{display:block;font-size:12px;color:var(--muted)}
-.overview-counts{display:flex;gap:24px;margin-top:20px}
-.overview-counts span{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
-.today-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:18px}
-.settings{border-bottom:1px solid var(--border);padding:0 2px 16px;margin-bottom:20px}
-.history{margin-bottom:18px}
-.actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.actions .primary-action{grid-column:1/-1}
-.actions #btnDiscard{grid-column:1/-1;min-height:36px;padding:6px;background:transparent;color:var(--muted);font-size:13px}
+.overview-label,.count-label{font-size:11px;color:var(--muted)}
+.overview-counts{display:flex;gap:18px;margin-top:7px}
+.overview-counts>div{display:flex;align-items:baseline;gap:4px}
+.overview-counts span:first-child{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.today-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:9px 11px;margin-bottom:10px;flex:none}
+.settings{margin-bottom:14px}
+.history{flex:1;min-height:0;display:flex;flex-direction:column}
+.actions{display:flex;gap:6px}
+.actions button{flex:1;min-width:0;min-height:38px;padding:6px 4px;font-size:13px;white-space:nowrap}
+.actions .primary-action{flex:1.8}
+.actions #btnDiscard{background:transparent;color:var(--muted);font-size:12px}
 button{
   border:0;border-radius:8px;font-size:14px;font-weight:600;padding:12px 10px;cursor:pointer;
   background:var(--primary);color:#fff;min-height:48px;transition:filter .15s, transform .05s;
@@ -53,7 +63,7 @@ button.green{background:var(--green)}
 button.amber{background:var(--amber)}
 button.red{background:var(--red)}
 button.rest{background:#edf2f6;color:var(--blue)}
-.today-status{font-size:15px;color:var(--muted);margin-bottom:12px}
+.today-status{font-size:13px;color:var(--muted);margin-bottom:6px}
 .today-status b{color:var(--text)}
 h2{font-size:15px;margin:0 0 10px;color:var(--text)}
 .settings label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
@@ -65,7 +75,7 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
 .settings input:focus{outline:2px solid var(--primary);outline-offset:1px}
 .settings .hint{font-size:12px;color:var(--muted);margin:10px 0 0}
 .records ul{list-style:none;margin:0;padding:0}
-.record{display:flex;flex-direction:column;gap:5px;padding:13px 14px;border-bottom:1px solid var(--border)}
+.record{display:flex;flex-direction:column;gap:4px;padding:9px 2px;border-bottom:1px solid var(--border)}
 .record .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .badge{font-size:12px;font-weight:700;padding:2px 6px;border-radius:4px;color:#fff}
 .badge.work{background:var(--primary)}
@@ -73,33 +83,22 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
 .badge.off{background:var(--amber)}
 .record .date{color:var(--muted);font-size:13px;flex:1}
 .record-open{background:transparent;color:var(--primary);min-height:32px;padding:4px 2px;font-size:13px}
-.record .meta{font-size:13px;color:var(--muted)}
-.record .nums{font-size:15px;font-weight:600}
+.record .meta{font-size:12px;color:var(--muted)}
+.record .nums{font-size:13px;font-weight:600}
 .record .nums .overtime-pos{color:var(--red)}
 .record .nums .overtime-neg{color:var(--green)}
 .empty{color:var(--muted);text-align:center;padding:22px 0;font-size:14px}
-.footer-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px}
-.footer-actions button{font-size:13px;padding:10px 4px;background:transparent;border:1px solid var(--border);color:var(--muted)}
-.view-tabs{display:flex;gap:20px;border-bottom:1px solid var(--border);margin-bottom:10px}
-.tab{background:transparent;color:var(--muted);min-height:40px;padding:8px 2px;border-radius:0}
+.footer-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.footer-actions button{min-height:36px;font-size:12px;padding:7px 3px;background:transparent;border:1px solid var(--border);color:var(--muted)}
+.view-tabs{display:flex;gap:16px;border-bottom:1px solid var(--border);margin-bottom:6px;flex:none}
+.tab{background:transparent;color:var(--muted);min-height:32px;padding:5px 2px;border-radius:0;font-size:13px}
 .tab.active{background:transparent;color:var(--primary);box-shadow:inset 0 -2px var(--primary)}
-.cal-head{display:flex;align-items:center;justify-content:space-between;margin:16px 0 12px;gap:8px}
-.cal-title{font-weight:700;font-size:16px}
-.cal-nav{background:transparent;color:var(--text);min-height:36px;padding:6px 14px;font-size:20px;line-height:1}
-.calendar-summary{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 2px;margin-bottom:14px}
-.calendar-summary .totals{display:flex;gap:20px;flex-wrap:wrap;font-size:14px;font-variant-numeric:tabular-nums}
-.calendar-summary .totals b{font-size:17px;color:var(--text)}
-.calendar-summary .totals .accent{color:var(--primary)}
-.calendar-summary .details{font-size:12px;color:var(--muted);margin-top:4px}
-.calendar-summary .details.over{color:var(--red)}
 .cal-stats{font-size:13px;color:var(--muted);margin-bottom:8px}
-.cal-stats b{color:var(--text)}
-.cal-stats.over b{color:var(--red)}
-.cal-week,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.cal-week span{text-align:center;color:var(--muted);font-size:12px;padding:2px 0}
-.cal-cell{position:relative;height:48px;min-height:0;padding:7px 2px 5px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text);font-size:14px;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}
-.cal-cell.empty{border:0;background:transparent;box-shadow:none}
-.cal-cell span{font-size:10px;color:var(--muted)}
+.cal-week,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-week span{text-align:center;color:var(--muted);font-size:11px;padding:1px 0}
+.cal-cell{position:relative;height:37px;min-height:0;padding:3px 1px;border:1px solid var(--border);border-radius:5px;background:#fff;color:var(--text);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:0;line-height:1.15}
+.cal-cell.empty{border:0;background:transparent;box-shadow:none;padding:0}
+.cal-cell span{font-size:9px;color:var(--muted)}
 .cal-normal{background:#e9f4ee;border-color:#c4dfcf}
 .cal-normal span{color:var(--green);font-weight:700}
 .cal-off{background:#fbf1e6;border-color:#ecd4b8}
@@ -110,9 +109,10 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
 .cal-overtime{background:#faedeb;border-color:#edc7c2}
 .cal-overtime span{color:var(--red);font-weight:700}
 .cal-today{outline:2px solid var(--primary);outline-offset:1px}
-.cal-legend{display:flex;gap:12px;margin-top:10px;font-size:12px;color:var(--muted);flex-wrap:wrap}
-.cal-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
-.cal-hint{font-size:12px;color:var(--muted);margin-top:6px}
+.cal-legend{display:flex;gap:10px;margin-top:5px;font-size:10px;color:var(--muted);flex-wrap:wrap}
+.cal-legend i{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:3px;vertical-align:0}
+#viewList{min-height:0;overflow-y:auto;flex:1}
+#viewCalendar{min-height:0;flex:1}
 .modal-backdrop{position:fixed;inset:0;background:rgba(17,24,39,.45);display:flex;align-items:center;justify-content:center;z-index:40;padding:16px}
 .modal-backdrop .dialog-body{background:#fff;border-radius:8px;width:min(92vw,440px);box-shadow:0 18px 50px rgba(17,24,39,.25);max-height:90vh;overflow:auto}
 .dialog-body{padding:18px}
@@ -132,28 +132,40 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
 }
 .toast.show{opacity:.95;transform:translateX(-50%) translateY(0)}
 .hidden{display:none !important}
-@media (max-width:360px){.wrap{padding-left:14px;padding-right:14px}.overview-value{font-size:29px}.overview-counts{gap:16px}}
+@media (max-width:360px){.wrap{padding-left:10px;padding-right:10px}.overview-value{font-size:24px}.overview-counts{gap:12px}.range-select{width:98px}}
+@media (max-height:650px){.wrap{padding-top:6px;padding-bottom:6px}header{padding-bottom:5px}.today-panel{margin-bottom:6px}.overview{padding-bottom:7px;margin-bottom:5px}.overview-value{font-size:23px}.view-tabs{margin-bottom:3px}.cal-cell{height:31px}.cal-legend{margin-top:3px}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>工时打卡</h1>
-    <div id="clock">--:--</div>
+    <div class="header-tools">
+      <div id="clock">--:--</div>
+      <details class="tools-menu" id="toolsMenu">
+        <summary aria-label="设置和数据" title="设置和数据">⋯</summary>
+        <div class="tools-popover">
+          <h2>设置</h2>
+          <div class="settings">
+            <div class="row">
+              <div class="field"><label for="setNormal">每天正常工时(小时)</label><input id="setNormal" type="number" min="0.5" step="0.5" inputmode="decimal" /></div>
+              <div class="field"><label for="setLunch">午休时长(分钟)</label><input id="setLunch" type="number" min="0" step="5" inputmode="numeric" /></div>
+            </div>
+            <div class="row" style="margin-top:10px">
+              <div class="field"><label for="setRestDays">每月休息天数</label><input id="setRestDays" type="number" min="0" step="1" inputmode="numeric" /></div>
+            </div>
+            <p class="hint">休息日上班全部算加班；调休按正常工时抵扣。</p>
+          </div>
+          <div class="footer-actions">
+            <button onclick="openRecordForm()">补录</button>
+            <button onclick="exportData()">导出</button>
+            <button onclick="document.getElementById('importFile').click()">导入</button>
+            <button onclick="clearData()">清空</button>
+          </div>
+        </div>
+      </details>
+    </div>
   </header>
-
-  <section class="overview" id="overview">
-    <div class="stats-head"><h2>工时概况</h2><select class="range-select" id="statsRange" aria-label="统计月份" onchange="selectStatsRange()"></select></div>
-    <div class="overview-hours">
-      <div><span class="overview-value"><span id="statTotalHours">0</span><small>小时</small></span><span class="overview-label">综合工时</span></div>
-      <div><span class="overview-value overtime"><span id="statOvertime">0</span><small>小时</small></span><span class="overview-label">加班余额</span></div>
-    </div>
-    <div class="overview-counts">
-      <div><span id="statWorkDays">0</span><span class="count-label">上班</span></div>
-      <div><span id="statRestDays">0</span><span class="count-label">休息</span></div>
-      <div><span id="statOffDays">0</span><span class="count-label">调休</span></div>
-    </div>
-  </section>
 
   <section class="today-panel">
     <div class="today-status" id="todayStatus">今天还没有打卡。</div>
@@ -168,27 +180,25 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
     </div>
   </section>
 
-  <details class="settings">
-    <summary style="cursor:pointer;font-weight:600;font-size:15px">设置</summary>
-    <div class="row" style="margin-top:14px">
-      <div class="field">
-        <label for="setNormal">每天正常工时(小时)</label>
-        <input id="setNormal" type="number" min="0.5" step="0.5" inputmode="decimal" />
-      </div>
-      <div class="field">
-        <label for="setLunch">午休时长(分钟)</label>
-        <input id="setLunch" type="number" min="0" step="5" inputmode="numeric" />
+  <section class="overview" id="overview">
+    <div class="stats-head">
+      <h2>工时概况</h2>
+      <div class="month-control">
+        <button class="month-nav" aria-label="上个月" onclick="changeMonth(-1)">‹</button>
+        <select class="range-select" id="statsRange" aria-label="统计月份" onchange="selectStatsRange()"></select>
+        <button class="month-nav" aria-label="下个月" onclick="changeMonth(1)">›</button>
       </div>
     </div>
-    <div class="row" style="margin-top:12px">
-      <div class="field">
-        <label for="setRestDays">每月休息天数</label>
-        <input id="setRestDays" type="number" min="0" step="1" inputmode="numeric" />
-      </div>
-      <div class="field"></div>
+    <div class="overview-hours">
+      <div><span class="overview-value"><span id="statTotalHours">0</span><small>小时</small></span><span class="overview-label">综合工时</span></div>
+      <div><span class="overview-value overtime"><span id="statOvertime">0</span><small>小时</small></span><span class="overview-label">加班余额</span></div>
     </div>
-    <p class="hint">休息日：正常工时 0，不上班不扣调休时长，上班则全部算加班。调休日：按 −正常工时 抵扣加班时长。</p>
-  </details>
+    <div class="overview-counts">
+      <div><span id="statWorkDays">0</span><span class="count-label">上班</span></div>
+      <div><span id="statRestDays">0</span><span class="count-label">休息</span></div>
+      <div><span id="statOffDays">0</span><span class="count-label">调休</span></div>
+    </div>
+  </section>
 
   <section class="history">
     <div class="view-tabs">
@@ -199,15 +209,6 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
       <div class="records"><ul id="recordList"></ul></div>
     </div>
     <div id="viewCalendar" class="hidden">
-      <div class="cal-head">
-        <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
-        <div class="cal-title" id="calTitle"></div>
-        <button class="cal-nav" onclick="changeMonth(1)">›</button>
-      </div>
-      <div class="calendar-summary">
-        <div class="totals"><span>综合工时 <b id="calHours">0</b> 小时</span><span>加班余额 <b class="accent" id="calOvertime">0</b> 小时</span></div>
-        <div class="details" id="calStats"></div>
-      </div>
       <div class="cal-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
       <div class="cal-grid" id="calGrid"></div>
       <div class="cal-legend">
@@ -216,16 +217,8 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
         <span><i style="background:#a96928"></i>调休</span>
         <span><i style="background:#c74e46"></i>加班</span>
       </div>
-      <div class="cal-hint">休息日若上班，当天工时全部算加班（蓝底「加」）。</div>
     </div>
   </section>
-
-  <div class="footer-actions">
-    <button class="ghost" onclick="openRecordForm()">补录</button>
-    <button class="ghost" onclick="exportData()">导出</button>
-    <button class="ghost" onclick="document.getElementById('importFile').click()">导入</button>
-    <button class="ghost" onclick="clearData()">清空</button>
-  </div>
   <input type="file" id="importFile" accept="application/json" class="hidden" onchange="importData(event)" />
 </div>
 
@@ -277,7 +270,7 @@ const STORE_KEY = 'workhour.v1';
 const DEFAULT_SETTINGS = { normalHours: 8, lunchMinutes: 30, restDaysPerMonth: 4 };
 
 let state = loadState();
-let currentView = 'list';
+let currentView = 'calendar';
 const initNow = new Date();
 let calendarCursor = { year: initNow.getFullYear(), month: initNow.getMonth() + 1 };
 let selectedPeriod = todayStr(initNow).slice(0, 7);
@@ -354,11 +347,6 @@ function computeStats(range){
   }
   return { workDays, offDays, restDays, normalWorkHours: round2(normalWorkHours), totalHours: round2(totalHours), overtime: round2(overtime) };
 }
-function restDaysInMonth(y, m){
-  const prefix = y + '-' + pad(m) + '-';
-  return state.records.filter(r => r.type === 'rest' && r.date.indexOf(prefix) === 0).length;
-}
-
 /* ---------- actions ---------- */
 function clockIn(){
   const today = todayStr();
@@ -457,6 +445,7 @@ function recordOff(){
 
 /* ---------- record form ---------- */
 function openRecordForm(id, date){
+  $('toolsMenu').open = false;
   $('dialogTitle').textContent = id ? '编辑记录' : '补录记录';
   $('fId').value = id || '';
   const rec = id ? state.records.find(r => r.id === id) : null;
@@ -672,7 +661,10 @@ function renderPeriodOptions(){
 }
 function selectStatsRange(){
   const period = $('statsRange').value;
-  if(period === 'all') selectedPeriod = 'all';
+  if(period === 'all'){
+    selectedPeriod = 'all';
+    setView('list');
+  }
   else setSelectedMonth(period);
   render();
 }
@@ -686,8 +678,8 @@ function render(){
   renderPeriodOptions();
   const stats = computeStats(selectedPeriod);
   $('statWorkDays').textContent = stats.workDays;
-  $('statRestDays').textContent = stats.restDays;
   $('statOffDays').textContent = stats.offDays;
+  $('statRestDays').textContent = selectedPeriod === 'all' ? stats.restDays : stats.restDays + '/' + state.settings.restDaysPerMonth;
   $('statTotalHours').textContent = fmtHours(stats.totalHours);
   $('statOvertime').textContent = (stats.overtime > 0 ? '+' : '') + fmtHours(stats.overtime);
 
@@ -757,8 +749,11 @@ function escapeHtml(s){
 
 /* ---------- calendar ---------- */
 function setView(v){
+  if(v === 'calendar' && selectedPeriod === 'all'){
+    setSelectedMonth(calendarCursor.year + '-' + pad(calendarCursor.month));
+    render();
+  }
   currentView = v;
-  $('overview').classList.toggle('hidden', v === 'calendar');
   $('tabList').classList.toggle('active', v === 'list');
   $('tabCalendar').classList.toggle('active', v === 'calendar');
   $('viewList').classList.toggle('hidden', v !== 'list');
@@ -780,15 +775,6 @@ function dayStatus(rec){
 function renderCalendar(){
   const y = calendarCursor.year;
   const m = calendarCursor.month;
-  $('calTitle').textContent = y + '年' + m + '月';
-  const monthly = computeStats(y + '-' + pad(m));
-  $('calHours').textContent = fmtHours(monthly.totalHours);
-  $('calOvertime').textContent = (monthly.overtime > 0 ? '+' : '') + fmtHours(monthly.overtime);
-  const quota = Number(state.settings.restDaysPerMonth) || 0;
-  const used = restDaysInMonth(y, m);
-  const cs = $('calStats');
-  cs.classList.toggle('over', quota > 0 && used > quota);
-  cs.textContent = '上班 ' + monthly.workDays + ' 天 · 休息 ' + used + ' / ' + quota + ' 天 · 调休 ' + monthly.offDays + ' 天';
   const firstDow = (new Date(y, m - 1, 1).getDay() + 6) % 7;
   const days = new Date(y, m, 0).getDate();
   let html = '';
@@ -807,6 +793,8 @@ function renderCalendar(){
     if(ds === todayStr()){ cls += ' cal-today'; }
     html += '<button class="' + cls + '" onclick="openDay(\'' + ds + '\')">' + d + '<span>' + label + '</span></button>';
   }
+  const cells = Math.ceil((firstDow + days) / 7) * 7;
+  for(let i = firstDow + days; i < cells; i++) html += '<div class="cal-cell empty"></div>';
   $('calGrid').innerHTML = html;
 }
 function openDay(dateStr){
@@ -836,7 +824,10 @@ $('setNormal').addEventListener('change', settingsChanged);
 $('setLunch').addEventListener('change', settingsChanged);
 $('setRestDays').addEventListener('change', settingsChanged);
 for(const id of ['fIn', 'fOut', 'fLunch', 'fNormal']) $(id).addEventListener('input', updateRecordPreview);
-setView('list');
+document.addEventListener('click', event => {
+  if(!$('toolsMenu').contains(event.target)) $('toolsMenu').open = false;
+});
+setView('calendar');
 tick();
 setInterval(tick, 1000);
 render();
