@@ -835,7 +835,14 @@ render();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=20261001-2').then((registration) => {
+      registration.update().catch(() => {});
+    }).catch(() => {});
+    if(window.caches){
+      caches.keys().then((keys) => {
+        keys.filter((key) => key !== 'workhour-v3').forEach((key) => caches.delete(key));
+      }).catch(() => {});
+    }
   });
 }
 </script>
