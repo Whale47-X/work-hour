@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#2563eb" />
+<meta name="theme-color" content="#176a60" />
 <title>工时打卡</title>
 <link rel="manifest" href="./manifest.json" />
 <link rel="apple-touch-icon" href="./icon-192.png" />
 <style>
 :root{
-  --bg:#f2f4f8; --card:#ffffff; --text:#111827; --muted:#6b7280;
-  --primary:#2563eb; --primary-dark:#1d4ed8; --green:#059669; --amber:#d97706; --red:#dc2626; --blue:#1d4ed8;
-  --border:#e5e7eb; --radius:16px; --shadow:0 6px 18px rgba(17,24,39,.06);
+  --bg:#f6f7f6; --card:#ffffff; --text:#202826; --muted:#65716d;
+  --primary:#176a60; --green:#21845b; --amber:#a96928; --red:#c74e46; --blue:#426d93;
+  --border:#dfe5e1; --radius:8px;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -20,33 +20,39 @@ body{
   background:var(--bg); color:var(--text); min-height:100vh; line-height:1.5;
   -webkit-tap-highlight-color:transparent;
 }
-.wrap{max-width:520px;margin:0 auto;padding:16px 16px calc(28px + env(safe-area-inset-bottom))}
-header{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 14px}
+.wrap{max-width:520px;margin:0 auto;padding:20px 18px calc(32px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;padding:0 0 22px}
 h1{font-size:20px;margin:0;font-weight:700}
-#clock{font-variant-numeric:tabular-nums;font-weight:700;font-size:18px;color:var(--primary)}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.stats.hours{grid-template-columns:repeat(2,1fr)}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 10px;text-align:center}
-.stat .value{display:block;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
-.stat .value.hot{color:var(--primary)}
-.stat .value.green{color:var(--green)}
-.stat .value.amber{color:var(--amber)}
-.stat .value.blue{color:var(--blue)}
-.stat .label{display:block;color:var(--muted);font-size:12px;margin-top:2px}
-.stat small{font-weight:400;color:var(--muted);font-size:13px}
+#clock{font-variant-numeric:tabular-nums;font-weight:600;font-size:16px;color:var(--muted)}
+.overview{padding:0 2px 22px;border-bottom:1px solid var(--border);margin-bottom:18px}
+.stats-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.stats-head h2{margin:0}
+.range-select{max-width:150px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-size:14px;padding:8px 9px}
+.overview-hours{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:end}
+.overview-hours>div+div{border-left:1px solid var(--border);padding-left:18px}
+.overview-value{display:block;font-size:34px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.overview-value small{font-size:13px;font-weight:500;color:var(--muted);margin-left:4px}
+.overview-value.overtime{color:var(--primary)}
+.overview-label,.count-label{display:block;font-size:12px;color:var(--muted)}
+.overview-counts{display:flex;gap:24px;margin-top:20px}
+.overview-counts span{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.today-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:18px}
+.settings{border-bottom:1px solid var(--border);padding:0 2px 16px;margin-bottom:20px}
+.history{margin-bottom:18px}
 .actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.actions .primary-action{grid-column:1/-1}
+.actions #btnDiscard{grid-column:1/-1;min-height:36px;padding:6px;background:transparent;color:var(--muted);font-size:13px}
 button{
-  border:0;border-radius:14px;font-size:15px;font-weight:600;padding:14px 10px;cursor:pointer;
+  border:0;border-radius:8px;font-size:14px;font-weight:600;padding:12px 10px;cursor:pointer;
   background:var(--primary);color:#fff;min-height:48px;transition:filter .15s, transform .05s;
 }
 button:active{transform:scale(.97)}
 button:disabled{background:#cbd5e1;color:#64748b;cursor:not-allowed}
-button.ghost{background:#eef2ff;color:var(--primary)}
+button.ghost{background:#edf3f0;color:var(--primary)}
 button.green{background:var(--green)}
 button.amber{background:var(--amber)}
 button.red{background:var(--red)}
-button.rest{background:#e7f0fd;color:var(--blue)}
+button.rest{background:#edf2f6;color:var(--blue)}
 .today-status{font-size:15px;color:var(--muted);margin-bottom:12px}
 .today-status b{color:var(--text)}
 h2{font-size:15px;margin:0 0 10px;color:var(--text)}
@@ -54,59 +60,65 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
 .settings .row{display:flex;gap:10px}
 .settings .field{flex:1}
 .settings input{
-  width:100%;border:1px solid var(--border);border-radius:12px;padding:11px 12px;font-size:16px;background:#fff;color:var(--text);
+  width:100%;border:1px solid var(--border);border-radius:8px;padding:11px 12px;font-size:16px;background:#fff;color:var(--text);
 }
 .settings input:focus{outline:2px solid var(--primary);outline-offset:1px}
 .settings .hint{font-size:12px;color:var(--muted);margin:10px 0 0}
 .records ul{list-style:none;margin:0;padding:0}
-.record{display:flex;flex-direction:column;gap:6px;padding:13px 14px;border:1px solid var(--border);border-radius:14px;margin-bottom:10px;background:#fff}
+.record{display:flex;flex-direction:column;gap:5px;padding:13px 14px;border-bottom:1px solid var(--border)}
 .record .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.badge{font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;color:#fff}
+.badge{font-size:12px;font-weight:700;padding:2px 6px;border-radius:4px;color:#fff}
 .badge.work{background:var(--primary)}
 .badge.rest{background:var(--blue)}
 .badge.off{background:var(--amber)}
 .record .date{color:var(--muted);font-size:13px;flex:1}
-.icon-btn{background:#f3f4f6;color:var(--muted);border-radius:10px;min-height:32px;padding:4px 10px;font-size:13px}
+.record-open{background:transparent;color:var(--primary);min-height:32px;padding:4px 2px;font-size:13px}
 .record .meta{font-size:13px;color:var(--muted)}
 .record .nums{font-size:15px;font-weight:600}
 .record .nums .overtime-pos{color:var(--red)}
 .record .nums .overtime-neg{color:var(--green)}
 .empty{color:var(--muted);text-align:center;padding:22px 0;font-size:14px}
-.footer-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px}
-.footer-actions button{font-size:13px;padding:11px 6px}
-.view-tabs{display:flex;gap:8px;margin-bottom:12px}
-.tab{flex:1;background:#eef2ff;color:var(--primary);min-height:42px;padding:10px 8px}
-.tab.active{background:var(--primary);color:#fff}
-.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px}
+.footer-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px}
+.footer-actions button{font-size:13px;padding:10px 4px;background:transparent;border:1px solid var(--border);color:var(--muted)}
+.view-tabs{display:flex;gap:20px;border-bottom:1px solid var(--border);margin-bottom:10px}
+.tab{background:transparent;color:var(--muted);min-height:40px;padding:8px 2px;border-radius:0}
+.tab.active{background:transparent;color:var(--primary);box-shadow:inset 0 -2px var(--primary)}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin:16px 0 12px;gap:8px}
 .cal-title{font-weight:700;font-size:16px}
-.cal-nav{background:#f3f4f6;color:var(--text);min-height:36px;padding:6px 14px;font-size:18px;line-height:1}
+.cal-nav{background:transparent;color:var(--text);min-height:36px;padding:6px 14px;font-size:20px;line-height:1}
+.calendar-summary{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 2px;margin-bottom:14px}
+.calendar-summary .totals{display:flex;gap:20px;flex-wrap:wrap;font-size:14px;font-variant-numeric:tabular-nums}
+.calendar-summary .totals b{font-size:17px;color:var(--text)}
+.calendar-summary .totals .accent{color:var(--primary)}
+.calendar-summary .details{font-size:12px;color:var(--muted);margin-top:4px}
+.calendar-summary .details.over{color:var(--red)}
 .cal-stats{font-size:13px;color:var(--muted);margin-bottom:8px}
 .cal-stats b{color:var(--text)}
 .cal-stats.over b{color:var(--red)}
 .cal-week,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .cal-week span{text-align:center;color:var(--muted);font-size:12px;padding:2px 0}
-.cal-cell{position:relative;min-height:0;padding:8px 2px 6px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);font-size:14px;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}
+.cal-cell{position:relative;height:48px;min-height:0;padding:7px 2px 5px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text);font-size:14px;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}
 .cal-cell.empty{border:0;background:transparent;box-shadow:none}
 .cal-cell span{font-size:10px;color:var(--muted)}
-.cal-normal{background:#e7f6ef;border-color:#b7e2cd}
+.cal-normal{background:#e9f4ee;border-color:#c4dfcf}
 .cal-normal span{color:var(--green);font-weight:700}
-.cal-off{background:#fdf3e2;border-color:#f0d9b4}
+.cal-off{background:#fbf1e6;border-color:#ecd4b8}
 .cal-off span{color:var(--amber);font-weight:700}
-.cal-rest{background:#e7f0fd;border-color:#bcd4f6}
+.cal-rest{background:#edf2f8;border-color:#cbd9e6}
 .cal-rest span{color:var(--blue);font-weight:700}
 .cal-rest.cal-rest-work span{color:var(--red)}
-.cal-overtime{background:#fdeaea;border-color:#f3c1c1}
+.cal-overtime{background:#faedeb;border-color:#edc7c2}
 .cal-overtime span{color:var(--red);font-weight:700}
 .cal-today{outline:2px solid var(--primary);outline-offset:1px}
 .cal-legend{display:flex;gap:12px;margin-top:10px;font-size:12px;color:var(--muted);flex-wrap:wrap}
 .cal-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
 .cal-hint{font-size:12px;color:var(--muted);margin-top:6px}
 .modal-backdrop{position:fixed;inset:0;background:rgba(17,24,39,.45);display:flex;align-items:center;justify-content:center;z-index:40;padding:16px}
-.modal-backdrop .dialog-body{background:#fff;border-radius:18px;width:min(92vw,440px);box-shadow:0 18px 50px rgba(17,24,39,.25);max-height:90vh;overflow:auto}
+.modal-backdrop .dialog-body{background:#fff;border-radius:8px;width:min(92vw,440px);box-shadow:0 18px 50px rgba(17,24,39,.25);max-height:90vh;overflow:auto}
 .dialog-body{padding:18px}
 .dialog-body h3{margin:0 0 14px;font-size:17px}
 .dialog-body label{display:block;font-size:13px;color:var(--muted);margin:10px 0 6px}
-.dialog-body input,.dialog-body select{width:100%;border:1px solid var(--border);border-radius:12px;padding:11px 12px;font-size:16px;background:#fff;color:var(--text)}
+.dialog-body input,.dialog-body select{width:100%;border:1px solid var(--border);border-radius:8px;padding:11px 12px;font-size:16px;background:#fff;color:var(--text)}
 .dialog-body .two{display:flex;gap:10px}
 .dialog-body .two>div{flex:1}
 .dialog-body label.check{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);margin-top:12px}
@@ -120,7 +132,7 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
 }
 .toast.show{opacity:.95;transform:translateX(-50%) translateY(0)}
 .hidden{display:none !important}
-@media (max-width:360px){.stat .value{font-size:20px}}
+@media (max-width:360px){.wrap{padding-left:14px;padding-right:14px}.overview-value{font-size:29px}.overview-counts{gap:16px}}
 </style>
 </head>
 <body>
@@ -130,27 +142,33 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
     <div id="clock">--:--</div>
   </header>
 
-  <div class="stats">
-    <div class="stat"><span class="value hot" id="statWorkDays">0</span><span class="label">上班天数</span></div>
-    <div class="stat"><span class="value blue" id="statRestDays">0</span><span class="label">休息天数</span></div>
-    <div class="stat"><span class="value amber" id="statOffDays">0</span><span class="label">调休天数</span></div>
-  </div>
-  <div class="stats hours" style="margin-top:10px">
-    <div class="stat"><span class="value" id="statTotalHours">0</span><span class="label">综合上班工时(小时)</span></div>
-    <div class="stat"><span class="value green" id="statOvertime">0</span><span class="label">累计加班工时(小时)</span></div>
-  </div>
+  <section class="overview" id="overview">
+    <div class="stats-head"><h2>工时概况</h2><select class="range-select" id="statsRange" aria-label="统计月份" onchange="selectStatsRange()"></select></div>
+    <div class="overview-hours">
+      <div><span class="overview-value"><span id="statTotalHours">0</span><small>小时</small></span><span class="overview-label">综合工时</span></div>
+      <div><span class="overview-value overtime"><span id="statOvertime">0</span><small>小时</small></span><span class="overview-label">加班余额</span></div>
+    </div>
+    <div class="overview-counts">
+      <div><span id="statWorkDays">0</span><span class="count-label">上班</span></div>
+      <div><span id="statRestDays">0</span><span class="count-label">休息</span></div>
+      <div><span id="statOffDays">0</span><span class="count-label">调休</span></div>
+    </div>
+  </section>
 
-  <div class="card" style="margin-top:14px">
+  <section class="today-panel">
     <div class="today-status" id="todayStatus">今天还没有打卡。</div>
     <div class="actions">
-      <button id="btnIn" onclick="clockIn()">上班打卡</button>
-      <button id="btnOut" class="green" onclick="clockOut()">下班打卡</button>
+      <button id="btnIn" class="primary-action" onclick="clockIn()">上班打卡</button>
+      <button id="btnOut" class="green primary-action hidden" onclick="clockOut()">下班打卡</button>
       <button id="btnRest" class="rest" onclick="recordRest()">休息</button>
       <button id="btnOff" class="amber" onclick="recordOff()">调休</button>
+      <button id="btnRecover" class="ghost primary-action hidden" onclick="openActiveForm()">补记下班</button>
+      <button id="btnDiscard" class="ghost hidden" onclick="discardActive()">放弃本次打卡</button>
+      <button id="btnEditToday" class="ghost primary-action hidden" onclick="openRecordForm(recordForDate(todayStr()).id)">编辑今日记录</button>
     </div>
-  </div>
+  </section>
 
-  <details class="card settings">
+  <details class="settings">
     <summary style="cursor:pointer;font-weight:600;font-size:15px">设置</summary>
     <div class="row" style="margin-top:14px">
       <div class="field">
@@ -172,7 +190,7 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
     <p class="hint">休息日：正常工时 0，不上班不扣调休时长，上班则全部算加班。调休日：按 −正常工时 抵扣加班时长。</p>
   </details>
 
-  <div class="card">
+  <section class="history">
     <div class="view-tabs">
       <button id="tabList" class="tab active" onclick="setView('list')">列表</button>
       <button id="tabCalendar" class="tab" onclick="setView('calendar')">日历</button>
@@ -186,18 +204,21 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
         <div class="cal-title" id="calTitle"></div>
         <button class="cal-nav" onclick="changeMonth(1)">›</button>
       </div>
-      <div class="cal-stats" id="calStats"></div>
+      <div class="calendar-summary">
+        <div class="totals"><span>综合工时 <b id="calHours">0</b> 小时</span><span>加班余额 <b class="accent" id="calOvertime">0</b> 小时</span></div>
+        <div class="details" id="calStats"></div>
+      </div>
       <div class="cal-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
       <div class="cal-grid" id="calGrid"></div>
       <div class="cal-legend">
-        <span><i style="background:#059669"></i>正常</span>
-        <span><i style="background:#1d4ed8"></i>休息</span>
-        <span><i style="background:#d97706"></i>调休</span>
-        <span><i style="background:#dc2626"></i>加班</span>
+        <span><i style="background:#21845b"></i>正常</span>
+        <span><i style="background:#426d93"></i>休息</span>
+        <span><i style="background:#a96928"></i>调休</span>
+        <span><i style="background:#c74e46"></i>加班</span>
       </div>
       <div class="cal-hint">休息日若上班，当天工时全部算加班（蓝底「加」）。</div>
     </div>
-  </div>
+  </section>
 
   <div class="footer-actions">
     <button class="ghost" onclick="openRecordForm()">补录</button>
@@ -236,9 +257,11 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
         <label for="fNormal">正常工时(小时)</label>
         <input id="fNormal" type="number" min="0.5" step="0.5" inputmode="decimal" />
       </div>
+      <div class="cal-stats" id="recordPreview" aria-live="polite"></div>
       <label for="fNote">备注(可选)</label>
       <input id="fNote" type="text" maxlength="60" placeholder="例如：加班、调休等" />
       <div class="dialog-actions">
+        <button type="button" id="btnDeleteRecord" class="red hidden" onclick="deleteCurrentRecord()">删除</button>
         <button type="button" class="ghost" onclick="closeDialog()">取消</button>
         <button type="submit">保存</button>
       </div>
@@ -257,6 +280,7 @@ let state = loadState();
 let currentView = 'list';
 const initNow = new Date();
 let calendarCursor = { year: initNow.getFullYear(), month: initNow.getMonth() + 1 };
+let selectedPeriod = todayStr(initNow).slice(0, 7);
 
 /* ---------- storage ---------- */
 function loadState(){
@@ -317,9 +341,10 @@ function overtimeDelta(r){
   if(r.type === 'rest') return computeDuration(r);
   return round2(computeDuration(r) - Number(r.normalHours));
 }
-function computeStats(){
+function computeStats(range){
   let workDays=0, offDays=0, restDays=0, totalHours=0, overtime=0, normalWorkHours=0;
   for(const r of state.records){
+    if(range !== 'all' && r.date.slice(0, 7) !== range) continue;
     const d = computeDuration(r);
     totalHours += d;
     overtime += overtimeDelta(r);
@@ -368,6 +393,10 @@ function clockOut(){
     toast('下班时间需晚于上班时间，请检查时间');
     return;
   }
+  if(hmToMin(out) - hmToMin(state.active.clockIn) <= state.active.lunchMinutes){
+    toast('工作时段需长于午休时长');
+    return;
+  }
   state.records.unshift({
     id: uid(),
     date: state.active.date,
@@ -379,8 +408,24 @@ function clockOut(){
     note: ''
   });
   state.active = null;
+  setSelectedMonth(todayStr().slice(0, 7));
   save();
   toast('下班打卡成功 ' + out);
+}
+function openActiveForm(){
+  if(!state.active) return;
+  openRecordForm(null, state.active.date);
+  $('fIn').value = state.active.clockIn;
+  $('fOut').value = state.active.date === todayStr() ? nowHM() : '17:00';
+  $('fLunch').value = state.active.lunchMinutes;
+  $('fNormal').value = state.active.normalHours;
+  updateRecordPreview();
+}
+function discardActive(){
+  if(!state.active || !confirm('放弃 ' + state.active.date + ' 的上班打卡？')) return;
+  state.active = null;
+  save();
+  toast('已放弃未完成打卡');
 }
 function recordRest(){
   const today = todayStr();
@@ -388,6 +433,7 @@ function recordRest(){
   if(recordForDate(today)){ toast('今天已有记录，请编辑或删除后重试'); return; }
   if(!confirm('把今天记为休息日？工时 0，不扣调休时长。')) return;
   state.records.unshift({ id: uid(), date: today, type: 'rest', normalHours: 0, note: '休息' });
+  setSelectedMonth(today.slice(0, 7));
   save();
   toast('已记录休息日');
 }
@@ -404,6 +450,7 @@ function recordOff(){
     normalHours: normalHours,
     note: '调休'
   });
+  setSelectedMonth(today.slice(0, 7));
   save();
   toast('已记录调休 ' + fmtHours(-normalHours) + ' 小时');
 }
@@ -422,6 +469,7 @@ function openRecordForm(id, date){
   $('fRestWorked').checked = isRestWorked(rec);
   $('fNote').value = rec ? (rec.note || '') : '';
   toggleTypeFields();
+  $('btnDeleteRecord').classList.toggle('hidden', !id);
   $('recordDialog').classList.remove('hidden');
 }
 function closeDialog(){ $('recordDialog').classList.add('hidden'); }
@@ -435,6 +483,26 @@ function toggleTypeFields(){
   $('normalFields').classList.toggle('hidden', isRest);
   $('fIn').required = isWork || restWorked;
   $('fOut').required = isWork || restWorked;
+  updateRecordPreview();
+}
+function updateRecordPreview(){
+  const type = $('fType').value;
+  const preview = $('recordPreview');
+  if(type === 'off'){
+    preview.textContent = '调休抵扣 ' + fmtHours(Number($('fNormal').value) || 0) + ' 小时';
+    return;
+  }
+  if(type === 'rest' && !$('fRestWorked').checked){
+    preview.textContent = '工时 0 小时';
+    return;
+  }
+  const duration = (hmToMin($('fOut').value) - hmToMin($('fIn').value) - Number($('fLunch').value || 0)) / 60;
+  if(!Number.isFinite(duration) || duration <= 0){
+    preview.textContent = '请检查上下班时间与午休时长';
+    return;
+  }
+  const overtime = type === 'rest' ? duration : duration - Number($('fNormal').value || 0);
+  preview.textContent = '实际 ' + fmtHours(duration) + ' 小时 · 加班 ' + (overtime > 0 ? '+' : '') + fmtHours(overtime) + ' 小时';
 }
 function saveRecord(e){
   e.preventDefault();
@@ -452,6 +520,7 @@ function saveRecord(e){
       if(!tin || !tout){ toast('请填写上下班时间'); return; }
       if(hmToMin(tout) <= hmToMin(tin)){ toast('下班时间需晚于上班时间'); return; }
       const lunch = Math.max(0, Number($('fLunch').value) || 0);
+      if(hmToMin(tout) - hmToMin(tin) <= lunch){ toast('午休时长不能超过工作时段'); return; }
       rec = { id: id || uid(), date, type: 'rest', in: tin, out: tout, lunchMinutes: lunch, normalHours: 0, note: $('fNote').value.trim() };
     }else{
       rec = { id: id || uid(), date, type: 'rest', normalHours: 0, note: $('fNote').value.trim() };
@@ -464,6 +533,7 @@ function saveRecord(e){
       if(!tin || !tout){ toast('请填写上下班时间'); return; }
       if(hmToMin(tout) <= hmToMin(tin)){ toast('下班时间需晚于上班时间'); return; }
       const lunch = Math.max(0, Number($('fLunch').value) || 0);
+      if(hmToMin(tout) - hmToMin(tin) <= lunch){ toast('午休时长不能超过工作时段'); return; }
       rec = { id: id || uid(), date, type, in: tin, out: tout, lunchMinutes: lunch, normalHours, note: $('fNote').value.trim() };
     }else{
       rec = { id: id || uid(), date, type, normalHours, note: $('fNote').value.trim() };
@@ -477,20 +547,19 @@ function saveRecord(e){
     state.records.unshift(rec);
   }
   if(state.active && state.active.date === date) state.active = null;
+  setSelectedMonth(date.slice(0, 7));
   closeDialog();
   save();
   toast('已保存');
 }
-function editRecord(id){
-  if(!confirm('编辑这条记录？')) return;
-  openRecordForm(id);
-}
+function deleteCurrentRecord(){ deleteRecord($('fId').value); }
 function deleteRecord(id){
   const rec = state.records.find(r => r.id === id);
   if(!rec) return;
   if(!confirm('删除 ' + rec.date + ' 的记录？')) return;
   state.records = state.records.filter(r => r.id !== id);
   if(state.active && state.active.date === rec.date) state.active = null;
+  closeDialog();
   save();
   toast('已删除');
 }
@@ -527,6 +596,23 @@ function exportData(){
   URL.revokeObjectURL(url);
   toast('已导出备份');
 }
+function validDate(value){
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+    && todayStr(new Date(value + 'T00:00:00')) === value;
+}
+function validTime(value){ return typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value); }
+function validRecord(r){
+  if(!r || typeof r !== 'object' || typeof r.id !== 'string'
+    || !/^[a-zA-Z0-9-]+$/.test(r.id)
+    || !validDate(r.date) || !['work', 'rest', 'off'].includes(r.type)
+    || typeof r.note !== 'string') return false;
+  if(r.type === 'off') return Number.isFinite(r.normalHours) && r.normalHours > 0;
+  if(r.type === 'rest' && !r.in && !r.out) return true;
+  return validTime(r.in) && validTime(r.out)
+    && Number.isFinite(r.lunchMinutes) && r.lunchMinutes >= 0
+    && hmToMin(r.out) - hmToMin(r.in) > r.lunchMinutes
+    && (r.type === 'rest' || (Number.isFinite(r.normalHours) && r.normalHours > 0));
+}
 function importData(event){
   const file = event.target.files && event.target.files[0];
   event.target.value = '';
@@ -539,9 +625,24 @@ function importData(event){
         toast('文件格式不正确');
         return;
       }
-      if(!confirm('导入将覆盖当前数据，确定继续？')) return;
-      data.settings = Object.assign({}, DEFAULT_SETTINGS, data.settings || {});
-      data.active = data.active || null;
+      const settings = Object.assign({}, DEFAULT_SETTINGS, data.settings || {});
+      const active = data.active || null;
+      const dates = new Set(), ids = new Set();
+      const valid = Number.isFinite(settings.normalHours) && settings.normalHours > 0
+        && Number.isFinite(settings.lunchMinutes) && settings.lunchMinutes >= 0
+        && Number.isInteger(settings.restDaysPerMonth) && settings.restDaysPerMonth >= 0
+        && data.records.every(r => {
+          if(!validRecord(r) || dates.has(r.date) || ids.has(r.id)) return false;
+          dates.add(r.date); ids.add(r.id); return true;
+        })
+        && (!active || (validDate(active.date) && validTime(active.clockIn)
+          && Number.isFinite(active.normalHours) && active.normalHours > 0
+          && Number.isFinite(active.lunchMinutes) && active.lunchMinutes >= 0
+          && !dates.has(active.date)));
+      if(!valid){ toast('备份中有无效或重复的记录'); return; }
+      if(!confirm('导入 ' + data.records.length + ' 条记录并覆盖当前数据？')) return;
+      data.settings = settings;
+      data.active = active;
       state = data;
       save();
       toast('导入成功');
@@ -559,9 +660,31 @@ function clearData(){
 }
 
 /* ---------- render ---------- */
+function renderPeriodOptions(){
+  const select = $('statsRange');
+  const months = new Set([todayStr().slice(0, 7), selectedPeriod]);
+  for(const r of state.records) months.add(r.date.slice(0, 7));
+  select.replaceChildren(new Option('全部记录', 'all'));
+  for(const month of [...months].filter(m => /^\d{4}-\d{2}$/.test(m)).sort().reverse()){
+    select.add(new Option(Number(month.slice(0, 4)) + '年' + Number(month.slice(5)) + '月', month));
+  }
+  select.value = selectedPeriod;
+}
+function selectStatsRange(){
+  const period = $('statsRange').value;
+  if(period === 'all') selectedPeriod = 'all';
+  else setSelectedMonth(period);
+  render();
+}
+function setSelectedMonth(month){
+  selectedPeriod = month;
+  calendarCursor.year = Number(month.slice(0, 4));
+  calendarCursor.month = Number(month.slice(5));
+}
 function render(){
   const today = todayStr();
-  const stats = computeStats();
+  renderPeriodOptions();
+  const stats = computeStats(selectedPeriod);
   $('statWorkDays').textContent = stats.workDays;
   $('statRestDays').textContent = stats.restDays;
   $('statOffDays').textContent = stats.offDays;
@@ -573,7 +696,7 @@ function render(){
   const status = $('todayStatus');
   if(active){
     const activeLabel = active.date === today ? '已上班打卡' : '上次上班打卡(' + active.date + ')';
-    status.innerHTML = activeLabel + ' <b>' + active.clockIn + '</b>，下班请点绿色按钮。';
+    status.innerHTML = activeLabel + ' <b>' + active.clockIn + '</b>。';
   }else if(todayRec){
     const d = computeDuration(todayRec);
     const label = todayRec.type === 'work' ? '上班' : (todayRec.type === 'rest' ? '休息' : '调休');
@@ -581,10 +704,14 @@ function render(){
   }else{
     status.textContent = '今天还没有打卡。';
   }
-  $('btnIn').disabled = !!(active || todayRec);
-  $('btnOut').disabled = !active;
-  $('btnRest').disabled = !!(active || todayRec);
-  $('btnOff').disabled = !!(active || todayRec);
+  const fresh = !active && !todayRec;
+  $('btnIn').classList.toggle('hidden', !fresh);
+  $('btnRest').classList.toggle('hidden', !fresh);
+  $('btnOff').classList.toggle('hidden', !fresh);
+  $('btnOut').classList.toggle('hidden', !active || active.date !== today);
+  $('btnRecover').classList.toggle('hidden', !active || active.date === today);
+  $('btnDiscard').classList.toggle('hidden', !active);
+  $('btnEditToday').classList.toggle('hidden', !todayRec || !!active);
 
   renderSettings();
   renderRecords();
@@ -592,11 +719,12 @@ function render(){
 }
 function renderRecords(){
   const list = $('recordList');
-  if(!state.records.length){
-    list.innerHTML = '<li class="empty">暂无记录，点击上方按钮开始打卡</li>';
+  const records = selectedPeriod === 'all' ? state.records : state.records.filter(r => r.date.slice(0, 7) === selectedPeriod);
+  if(!records.length){
+    list.innerHTML = '<li class="empty">' + (state.records.length ? '该月暂无记录' : '暂无记录，点击上方按钮开始打卡') + '</li>';
     return;
   }
-  const sorted = state.records.slice().sort((a,b) => b.date.localeCompare(a.date));
+  const sorted = records.slice().sort((a,b) => b.date.localeCompare(a.date));
   list.innerHTML = sorted.map(r => {
     const d = computeDuration(r);
     const o = overtimeDelta(r);
@@ -613,13 +741,12 @@ function renderRecords(){
       badge = '<span class="badge off">调休</span>';
       meta = '正常工时 ' + fmtHours(r.normalHours) + ' 小时';
     }
-    if(r.note) meta += ' · ' + escapeHtml(r.note);
+    if(r.note) meta += ' · ' + r.note;
     const oCls = o > 0 ? 'overtime-pos' : 'overtime-neg';
     return '<li class="record">'
       + '<div class="top">' + badge + '<span class="date">' + r.date + '</span>'
-      + '<button class="icon-btn" onclick="editRecord(\'' + r.id + '\')">编辑</button>'
-      + '<button class="icon-btn" onclick="deleteRecord(\'' + r.id + '\')">删除</button></div>'
-      + '<div class="meta">' + meta + '</div>'
+      + '<button class="record-open" onclick="openRecordForm(\'' + r.id + '\')" aria-label="编辑 ' + r.date + ' 的记录">查看</button></div>'
+      + '<div class="meta">' + escapeHtml(meta) + '</div>'
       + '<div class="nums">时长 ' + fmtHours(d) + ' 小时 · 加班 <span class="' + oCls + '">' + (o > 0 ? '+' : '') + fmtHours(o) + '</span> 小时</div>'
       + '</li>';
   }).join('');
@@ -631,6 +758,7 @@ function escapeHtml(s){
 /* ---------- calendar ---------- */
 function setView(v){
   currentView = v;
+  $('overview').classList.toggle('hidden', v === 'calendar');
   $('tabList').classList.toggle('active', v === 'list');
   $('tabCalendar').classList.toggle('active', v === 'calendar');
   $('viewList').classList.toggle('hidden', v !== 'list');
@@ -640,7 +768,8 @@ function changeMonth(delta){
   calendarCursor.month += delta;
   if(calendarCursor.month > 12){ calendarCursor.month = 1; calendarCursor.year += 1; }
   else if(calendarCursor.month < 1){ calendarCursor.month = 12; calendarCursor.year -= 1; }
-  renderCalendar();
+  setSelectedMonth(calendarCursor.year + '-' + pad(calendarCursor.month));
+  render();
 }
 function dayStatus(rec){
   if(!rec) return null;
@@ -652,11 +781,14 @@ function renderCalendar(){
   const y = calendarCursor.year;
   const m = calendarCursor.month;
   $('calTitle').textContent = y + '年' + m + '月';
+  const monthly = computeStats(y + '-' + pad(m));
+  $('calHours').textContent = fmtHours(monthly.totalHours);
+  $('calOvertime').textContent = (monthly.overtime > 0 ? '+' : '') + fmtHours(monthly.overtime);
   const quota = Number(state.settings.restDaysPerMonth) || 0;
   const used = restDaysInMonth(y, m);
   const cs = $('calStats');
   cs.classList.toggle('over', quota > 0 && used > quota);
-  cs.innerHTML = '本月休息 <b>' + used + '</b> / ' + quota + ' 天';
+  cs.textContent = '上班 ' + monthly.workDays + ' 天 · 休息 ' + used + ' / ' + quota + ' 天 · 调休 ' + monthly.offDays + ' 天';
   const firstDow = (new Date(y, m - 1, 1).getDay() + 6) % 7;
   const days = new Date(y, m, 0).getDate();
   let html = '';
@@ -687,7 +819,9 @@ function openDay(dateStr){
 function tick(){
   const d = new Date();
   $('clock').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes());
+  if(todayStr(d) !== lastRenderedDate){ lastRenderedDate = todayStr(d); render(); }
 }
+let lastRenderedDate = todayStr();
 let toastTimer = null;
 function toast(msg){
   const t = $('toast');
@@ -701,6 +835,7 @@ function toast(msg){
 $('setNormal').addEventListener('change', settingsChanged);
 $('setLunch').addEventListener('change', settingsChanged);
 $('setRestDays').addEventListener('change', settingsChanged);
+for(const id of ['fIn', 'fOut', 'fLunch', 'fNormal']) $(id).addEventListener('input', updateRecordPreview);
 setView('list');
 tick();
 setInterval(tick, 1000);
