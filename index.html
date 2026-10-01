@@ -835,14 +835,25 @@ render();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=20261001-2').then((registration) => {
-      registration.update().catch(() => {});
-    }).catch(() => {});
-    if(window.caches){
-      caches.keys().then((keys) => {
-        keys.filter((key) => key !== 'workhour-v3').forEach((key) => caches.delete(key));
-      }).catch(() => {});
-    }
+    const clientVersion = '20261001-3';
+    const resetClient = localStorage.getItem('workhour-client-version') !== clientVersion;
+    const registrations = navigator.serviceWorker.getRegistrations
+      ? navigator.serviceWorker.getRegistrations()
+      : Promise.resolve([]);
+    registrations.then((regs) => Promise.all(regs.map((registration) => registration.unregister())))
+      .then(() => window.caches ? caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key)))) : null)
+      .then(() => {
+        if(resetClient){
+          localStorage.setItem('workhour-client-version', clientVersion);
+          location.reload();
+          return;
+        }
+        navigator.serviceWorker.register('./sw.js?v=20261001-3').then((registration) => {
+          registration.update().catch(() => {});
+        }).catch(() => {});
+      }).catch(() => {
+        navigator.serviceWorker.register('./sw.js?v=20261001-3').catch(() => {});
+      });
   });
 }
 </script>
