@@ -98,7 +98,7 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
 .cal-week span{text-align:center;color:var(--muted);font-size:12px;padding:1px 0}
 .cal-cell{position:relative;height:auto;min-height:37px;padding:3px 1px;border:1px solid var(--border);border-radius:5px;background:#fff;color:var(--text);font-size:14px;display:flex;flex-direction:column;align-items:center;gap:0;line-height:1.15}
 .cal-cell.empty{border:0;background:transparent;box-shadow:none;padding:0}
-.cal-cell span{font-size:10px;color:var(--muted)}
+.cal-cell span{font-size:11px;color:var(--muted);white-space:nowrap}
 .cal-normal{background:#e9f4ee;border-color:#c4dfcf}
 .cal-normal span{color:var(--green);font-weight:700}
 .cal-off{background:#fbf1e6;border-color:#ecd4b8}
@@ -792,8 +792,11 @@ function renderCalendar(){
     else if(st === 'restWork'){ cls += ' cal-rest cal-rest-work'; label = '加'; }
     else if(st === 'overtime'){ cls += ' cal-overtime'; label = '加'; }
     else if(st === 'normal'){ cls += ' cal-normal'; label = '班'; }
+    const overtime = rec ? overtimeDelta(rec) : 0;
+    if(overtime > 0) label = '+' + fmtHours(overtime);
     if(ds === todayStr()){ cls += ' cal-today'; }
-    html += '<button class="' + cls + '" onclick="openDay(\'' + ds + '\')">' + d + '<span>' + label + '</span></button>';
+    const accessibleLabel = ds + (overtime > 0 ? '，加班 ' + fmtHours(overtime) + ' 小时' : '');
+    html += '<button class="' + cls + '" aria-label="' + accessibleLabel + '" onclick="openDay(\'' + ds + '\')">' + d + '<span>' + label + '</span></button>';
   }
   const cells = Math.ceil((firstDow + days) / 7) * 7;
   for(let i = firstDow + days; i < cells; i++) html += '<div class="cal-cell empty"></div>';
