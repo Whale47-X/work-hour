@@ -192,7 +192,7 @@ h2{font-size:15px;margin:0 0 10px;color:var(--text)}
       </div>
     </div>
     <div class="overview-hours">
-      <div><span class="overview-value"><span id="statTotalHours">0</span><small>小时</small></span><span class="overview-label">综合工时</span></div>
+      <div><span class="overview-value"><span id="statTotalHours">0</span><small>小时</small></span><span class="overview-label">总工时</span></div>
       <div><span class="overview-value overtime"><span id="statOvertime">0</span><small>小时</small></span><span class="overview-label">加班余额</span></div>
     </div>
     <div class="overview-counts">
@@ -341,7 +341,7 @@ function computeStats(range){
   for(const r of state.records){
     if(range !== 'all' && r.date.slice(0, 7) !== range) continue;
     const d = computeDuration(r);
-    totalHours += d;
+    if(r.type !== 'off') totalHours += d;
     overtime += overtimeDelta(r);
     if(r.type === 'work'){ workDays++; normalWorkHours += Number(r.normalHours); }
     else if(r.type === 'rest'){ restDays++; }
